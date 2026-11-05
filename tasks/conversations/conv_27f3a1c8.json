@@ -1,0 +1,18 @@
+{
+  "id": "conv_27f3a1c8",
+  "title": "Quem desenvolveu a TCC e qual é o número do CVV?",
+  "created_at": "2026-11-05T17:39:43.221178",
+  "updated_at": "2026-11-05T17:39:46.950650",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Quem desenvolveu a TCC e qual é o número do CVV?",
+      "timestamp": "2026-11-05T17:39:43.228547"
+    },
+    {
+      "role": "assistant",
+      "content": "A Terapia Cognitivo‑Comportamental (TCC) foi desenvolvida por **Aaron Beck**.\n\nO número do **CVV (Centro de Valorização da Vida)**, que funciona 24 h para apoio emocional e prevenção do suicídio, é **188**.",
+      "timestamp": "2026-11-05T17:39:46.948906"
+    }
+  ]
+}

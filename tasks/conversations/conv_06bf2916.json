@@ -1,0 +1,18 @@
+{
+  "id": "conv_06bf2916",
+  "title": "Como vc se chama ?",
+  "created_at": "2026-11-05T18:02:01.668335",
+  "updated_at": "2026-11-05T18:02:04.797905",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Como vc se chama ?",
+      "timestamp": "2026-11-05T18:02:01.670791"
+    },
+    {
+      "role": "assistant",
+      "content": "Oi! Eu sou a **AMORIM A.I**, sua assistente virtual especializada em **psicologia** e **negócios**. 🌱  \n\nComo posso apoiar você hoje?  \n\n- Psicoeducação (explicação de conceitos psicológicos)  \n- Apoio à prática clínica (planos de sessão, anamnese, materiais para pacientes)  \n- Gestão de consultório (precificação, finanças, marketing ético)  \n- Criação de planilhas, PDFs ou apresentações  \n\nFique à vontade para me contar o que precisa!",
+      "timestamp": "2026-11-05T18:02:04.797890"
+    }
+  ]
+}

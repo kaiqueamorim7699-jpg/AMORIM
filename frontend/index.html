@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMORIM A.I</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: #000000; color: #ffffff; height: 100vh; overflow: hidden; display: flex; }
+
+/* SIDEBAR */
+#sidebar { width: 260px; background: #0a0a0a; border-right: 1px solid #1f1f1f; display: flex; flex-direction: column; transition: transform 0.2s; flex-shrink: 0; }
+#sidebar.hidden { transform: translateX(-260px); margin-left: -260px; }
+.sidebar-header { padding: 16px; border-bottom: 1px solid #1f1f1f; }
+.btn-new { width: 100%; padding: 12px; background: #ffffff; color: #000; border: none; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.15s; }
+.btn-new:hover { background: #e5e5e5; }
+.sidebar-brand { padding: 16px; font-size: 0.85rem; color: #888; border-bottom: 1px solid #1f1f1f; display: flex; align-items: center; gap: 8px; }
+.sidebar-brand strong { color: #fff; }
+#conv-list { flex: 1; overflow-y: auto; padding: 8px; }
+#conv-list::-webkit-scrollbar { width: 6px; }
+#conv-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+.conv-item { padding: 10px 12px; margin-bottom: 2px; border-radius: 8px; cursor: pointer; font-size: 0.88rem; color: #ccc; display: flex; align-items: center; justify-content: space-between; gap: 8px; transition: background 0.15s; }
+.conv-item:hover { background: #1a1a1a; }
+.conv-item.active { background: #262626; color: #fff; }
+.conv-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.conv-delete { opacity: 0; background: none; border: none; color: #888; cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
+.conv-item:hover .conv-delete { opacity: 1; }
+.conv-delete:hover { background: #333; color: #fff; }
+
+/* MAIN */
+#main { flex: 1; display: flex; flex-direction: column; min-width: 0; background: #000; }
+#topbar { padding: 12px 20px; border-bottom: 1px solid #1f1f1f; display: flex; align-items: center; gap: 12px; background: #000; }
+#toggle-sidebar { background: none; border: none; color: #fff; font-size: 1.2rem; cursor: pointer; padding: 6px 10px; border-radius: 6px; }
+#toggle-sidebar:hover { background: #1a1a1a; }
+#topbar h1 { font-size: 1rem; font-weight: 500; color: #fff; }
+#topbar .subtitle { font-size: 0.78rem; color: #666; margin-left: auto; }
+
+#chat { flex: 1; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px; }
+#chat::-webkit-scrollbar { width: 8px; }
+#chat::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+#chat::-webkit-scrollbar-track { background: #000; }
+
+.msg-wrap { display: flex; gap: 12px; max-width: 820px; width: 100%; margin: 0 auto; animation: fadeIn 0.2s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; }
+.avatar.user { background: #4f46e5; color: #fff; }
+.avatar.bot { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: #fff; }
+.msg-content { flex: 1; min-width: 0; padding-top: 4px; line-height: 1.65; font-size: 0.95rem; color: #e5e5e5; word-wrap: break-word; overflow-wrap: break-word; }
+.msg-content p { margin-bottom: 10px; }
+.msg-content p:last-child { margin-bottom: 0; }
+.msg-content strong { color: #fff; font-weight: 600; }
+.msg-content code { background: #1a1a1a; padding: 2px 6px; border-radius: 4px; font-size: 0.88em; color: #a5b4fc; font-family: 'Consolas', 'Monaco', monospace; }
+.msg-content pre { background: #0a0a0a; border: 1px solid #1f1f1f; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 10px 0; }
+.msg-content pre code { background: none; padding: 0; color: #e5e5e5; }
+.msg-content ul, .msg-content ol { margin: 8px 0 10px 20px; }
+.msg-content li { margin-bottom: 4px; }
+.msg-content a { color: #818cf8; text-decoration: underline; }
+.msg-content a:hover { color: #a5b4fc; }
+.msg-content h1, .msg-content h2, .msg-content h3 { color: #fff; margin: 14px 0 8px; font-size: 1.05rem; }
+.msg-content table { border-collapse: collapse; margin: 10px 0; font-size: 0.88rem; }
+.msg-content th, .msg-content td { border: 1px solid #333; padding: 6px 10px; text-align: left; }
+.msg-content th { background: #1a1a1a; color: #fff; }
+
+/* PLANO */
+.plan-box { max-width: 820px; width: 100%; margin: 0 auto; background: #0a0a0a; border: 1px solid #1f1f1f; border-radius: 10px; padding: 14px; font-size: 0.88rem; }
+.plan-box-header { color: #888; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid #1f1f1f; font-size: 0.82rem; }
+.plan-task { padding: 10px 12px; margin-bottom: 8px; background: #141414; border-radius: 8px; border-left: 3px solid #888; }
+.plan-task-title { font-weight: 600; color: #fff; margin-bottom: 4px; }
+.plan-task-state { font-size: 0.78rem; margin-bottom: 4px; }
+.plan-task-desc { color: #a3a3a3; font-size: 0.83rem; }
+.plan-task-actions { margin-top: 8px; display: flex; gap: 6px; }
+.plan-task-actions button { padding: 5px 12px; font-size: 0.78rem; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+.btn-approve { background: #16a34a; color: #fff; }
+.btn-reject { background: #dc2626; color: #fff; }
+.plan-task-output { margin-top: 8px; padding: 8px 10px; background: #1a1a1a; border-radius: 6px; color: #a5b4fc; font-size: 0.83rem; word-wrap: break-word; }
+.plan-final { margin-top: 12px; padding: 12px; background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 8px; border-left: 3px solid #818cf8; }
+
+/* INPUT */
+#input-area { padding: 16px 20px 24px; background: #000; }
+.input-wrapper { max-width: 820px; margin: 0 auto; display: flex; gap: 10px; background: #141414; border: 1px solid #2a2a2a; border-radius: 14px; padding: 8px 8px 8px 18px; transition: border-color 0.15s; }
+.input-wrapper:focus-within { border-color: #4f46e5; }
+#input { flex: 1; background: transparent; border: none; color: #fff; font-size: 0.95rem; outline: none; padding: 8px 0; font-family: inherit; resize: none; max-height: 200px; }
+#input::placeholder { color: #555; }
+#send { width: 36px; height: 36px; border-radius: 10px; border: none; background: #fff; color: #000; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; flex-shrink: 0; align-self: flex-end; }
+#send:hover:not(:disabled) { background: #e5e5e5; }
+#send:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.cursor-blink { display: inline-block; width: 7px; height: 1em; background: #a5b4fc; margin-left: 2px; vertical-align: text-bottom; animation: blink 1s infinite; }
+@keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+.empty-state { text-align: center; color: #666; margin-top: 15vh; }
+.empty-state h2 { color: #fff; font-size: 1.5rem; margin-bottom: 8px; font-weight: 600; }
+.empty-state p { font-size: 0.9rem; }
+
+@media (max-width: 700px) {
+    #sidebar { position: fixed; z-index: 100; height: 100vh; }
+    #sidebar.hidden { transform: translateX(-260px); margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+    <div class="sidebar-brand"><span>🤖</span> <strong>AMORIM A.I</strong></div>
+    <div class="sidebar-header">
+        <button class="btn-new" onclick="novoChat()"><span>+</span> Novo chat</button>
+    </div>
+    <div id="conv-list"></div>
+</div>
+
+<div id="main">
+    <div id="topbar">
+        <button id="toggle-sidebar" onclick="toggleSidebar()">☰</button>
+        <h1>AMORIM A.I</h1>
+        <span class="subtitle">Motor de Agentes • Groq</span>
+    </div>
+
+    <div id="chat">
+        <div class="empty-state">
+            <h2>Como posso ajudar hoje?</h2>
+            <p>Especialista em psicologia, negócios, planilhas, apresentações e PDFs.</p>
+        </div>
+    </div>
+
+    <div id="input-area">
+        <div class="input-wrapper">
+            <textarea id="input" placeholder="Pergunte alguma coisa..." rows="1" autofocus></textarea>
+            <button id="send" onclick="enviar()">↑</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ─── URL DO BACKEND ───────────────────────────
+// Se for rodar tudo no Render, deixe vazio "".
+// Se for hospedar o HTML no Vercel, coloque o link do Render.
+const API_URL = ""; 
+// ──────────────────────────────────────────────
+
+let currentConvId = null;
+let isStreaming = false;
+
+const chat = document.getElementById('chat');
+const input = document.getElementById('input');
+const btn = document.getElementById('send');
+const convList = document.getElementById('conv-list');
+
+const STATE_LABEL = { pending: '⏳ Pendente', running: '🔄 Executando', awaiting_approval: '✋ Aguardando', done: '✅ Concluída', failed: '❌ Falha' };
+const STATE_COLOR = { pending: '#888', running: '#3b82f6', awaiting_approval: '#f59e0b', done: '#22c55e', failed: '#ef4444' };
+
+marked.setOptions({ breaks: true, gfm: true });
+
+input.addEventListener('input', () => {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 200) + 'px';
+});
+input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviar(); }
+});
+
+carregarConversas();
+
+async function carregarConversas() {
+    try {
+        const res = await fetch(API_URL + '/api/conversations');
+        const data = await res.json();
+        renderizarLista(data.conversations);
+    } catch (e) { console.error(e); }
+}
+
+function renderizarLista(convs) {
+    convList.innerHTML = '';
+    if (!convs || !convs.length) {
+        convList.innerHTML = '<div style="padding:12px;color:#555;font-size:0.82rem;text-align:center;">Nenhuma conversa ainda</div>';
+        return;
+    }
+    convs.forEach(c => {
+        const div = document.createElement('div');
+        div.dataset.id = c.id;
+        div.className = 'conv-item' + (c.id === currentConvId ? ' active' : '');
+        div.innerHTML = `<span>${escapeHtml(c.title)}</span><button class="conv-delete" onclick="event.stopPropagation();deletarConversa('${c.id}')">×</button>`;
+        div.onclick = () => abrirConversa(c.id);
+        convList.appendChild(div);
+    });
+}
+
+function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+async function novoChat() {
+    currentConvId = null;
+    chat.innerHTML = `<div class="empty-state"><h2>Como posso ajudar hoje?</h2><p>Especialista em psicologia, negócios, planilhas, apresentações e PDFs.</p></div>`;
+    carregarConversas();
+    input.focus();
+}
+
+async function abrirConversa(convId) {
+    if (isStreaming) return;
+    currentConvId = convId;
+    chat.innerHTML = '';
+    try {
+        const res = await fetch(API_URL + `/api/conversations/${convId}`);
+        const conv = await res.json();
+        if (conv.messages) {
+            conv.messages.forEach(m => {
+                if (m.role === 'user') addMsg(m.content, 'user');
+                else { addMsg(m.content, 'bot'); if (m.plan) renderPlan(m.plan); }
+            });
+        }
+        carregarConversas();
+    } catch (e) { console.error(e); }
+}
+
+async function deletarConversa(convId) {
+    if (!confirm('Apagar essa conversa?')) return;
+    const el = document.querySelector(`.conv-item[data-id="${convId}"]`);
+    if (el) el.remove();
+    try {
+        await fetch(API_URL + `/api/conversations/${convId}`, { method: 'DELETE' });
+    } catch (e) { console.error(e); }
+    if (currentConvId === convId) novoChat();
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('hidden'); }
+
+function addMsg(text, role, streaming = false) {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg-wrap';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ' + (role === 'user' ? 'user' : 'bot');
+    avatar.textContent = role === 'user' ? 'V' : 'A';
+    const content = document.createElement('div');
+    content.className = 'msg-content';
+    
+    if (role === 'user') content.textContent = text;
+    else {
+        content.innerHTML = renderMarkdown(text);
+        if (streaming) {
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor-blink';
+            content.appendChild(cursor);
+        }
+    }
+    wrap.appendChild(avatar);
+    wrap.appendChild(content);
+    chat.appendChild(wrap);
+    chat.scrollTop = chat.scrollHeight;
+    return content;
+}
+
+function renderMarkdown(text) {
+    let processed = text;
+    processed = processed.replace(/(`?output[\\\/][^\s`)]+\.(xlsx|pptx|pdf|png|jpg|jpeg)`?)/gi, (m, p1) => {
+        const clean = p1.replace(/`/g, '').trim();
+        const filename = clean.split(/[\\\/]/).pop();
+        return `[📥 ${clean}](${API_URL}/output/${encodeURIComponent(filename)})`;
+    });
+    try { return marked.parse(processed); } catch (e) { return escapeHtml(text).replace(/\n/g, '<br>'); }
+}
+
+function renderPlan(plan) {
+    const box = document.createElement('div');
+    box.className = 'plan-box';
+    box.dataset.planId = plan.id;
+    let html = `<div class="plan-box-header">📋 <strong>Plano</strong> — ${escapeHtml(plan.objective)}<br>Status: <strong>${plan.status}</strong></div>`;
+    plan.tasks.forEach((t, i) => {
+        const color = STATE_COLOR[t.state] || '#888';
+        const label = STATE_LABEL[t.state] || t.state;
+        html += `<div class="plan-task" style="border-left-color:${color};">
+            <div class="plan-task-title">${i+1}. ${escapeHtml(t.title)}</div>
+            <div class="plan-task-state" style="color:${color};">${label} • <code>${t.agent_name}</code></div>
+            <div class="plan-task-desc">${escapeHtml(t.description)}</div>`;
+        if (t.state === 'awaiting_approval') {
+            html += `<div class="plan-task-actions"><button class="btn-approve" onclick="aprovar('${plan.id}','${t.id}')">✅ Aprovar</button><button class="btn-reject" onclick="rejeitar('${plan.id}','${t.id}')">❌ Rejeitar</button></div>`;
+        }
+        if (t.state === 'done' && t.result && t.result.output) html += `<div class="plan-task-output">${escapeHtml(String(t.result.output).slice(0, 400))}</div>`;
+        if (t.state === 'failed' && t.error) html += `<div class="plan-task-output" style="color:#fca5a5;">Erro: ${escapeHtml(t.error)}</div>`;
+        html += `</div>`;
+    });
+    if (plan.final_answer) html += `<div class="plan-final"><strong>🎯 Entrega final:</strong><br>${renderMarkdown(plan.final_answer)}</div>`;
+    box.innerHTML = html;
+    chat.appendChild(box);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+async function aprovar(planId, taskId) {
+    const res = await fetch(API_URL + `/api/plans/${planId}/approve/${taskId}`, { method: 'POST' });
+    const plan = await res.json();
+    document.querySelectorAll(`[data-plan-id="${planId}"]`).forEach(el => el.remove());
+    renderPlan(plan);
+}
+async function rejeitar(planId, taskId) {
+    const res = await fetch(API_URL + `/api/plans/${planId}/reject/${taskId}`, { method: 'POST' });
+    const plan = await res.json();
+    document.querySelectorAll(`[data-plan-id="${planId}"]`).forEach(el => el.remove());
+    renderPlan(plan);
+}
+
+async function enviar() {
+    const texto = input.value.trim();
+    if (!texto || isStreaming) return;
+
+    const empty = chat.querySelector('.empty-state');
+    if (empty) empty.remove();
+
+    addMsg(texto, 'user');
+    input.value = '';
+    input.style.height = 'auto';
+    isStreaming = true;
+    btn.disabled = true;
+
+    const contentEl = addMsg('', 'bot', true);
+    let acumulado = '';
+
+    try {
+        const res = await fetch(API_URL + '/api/chat/stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: texto, conversation_id: currentConvId })
+        });
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const linhas = buffer.split('\n\n');
+            buffer = linhas.pop() || '';
+
+            for (const linha of linhas) {
+                if (!linha.startsWith('data: ')) continue;
+                const json = linha.slice(6).trim();
+                if (!json) continue;
+                let evt;
+                try { evt = JSON.parse(json); } catch { continue; }
+
+                if (evt.type === 'conversation') currentConvId = evt.id;
+                else if (evt.type === 'token') {
+                    acumulado += evt.content;
+                    contentEl.innerHTML = renderMarkdown(acumulado) + '<span class="cursor-blink"></span>';
+                    chat.scrollTop = chat.scrollHeight;
+                } else if (evt.type === 'plan') renderPlan(evt.plan);
+                else if (evt.type === 'error') {
+                    acumulado += `\n\n**Erro:** ${evt.content}`;
+                    contentEl.innerHTML = renderMarkdown(acumulado);
+                } else if (evt.type === 'done') {
+                    contentEl.innerHTML = renderMarkdown(acumulado);
+                    if (evt.conversation_id) currentConvId = evt.conversation_id;
+                }
+            }
+        }
+    } catch (e) {
+        contentEl.innerHTML = renderMarkdown('Erro de conexão. Verifique o servidor.');
+    }
+
+    isStreaming = false;
+    btn.disabled = false;
+    input.focus();
+    carregarConversas();
+}
+</script>
+</body>
+</html>

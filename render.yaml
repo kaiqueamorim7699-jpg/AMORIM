@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: amorim-ai-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: AMORIM_API_KEY
+        sync: false # Você vai colar a chave no painel do Render
+      - key: AMORIM_MODEL
+        value: llama-3.1-8b-instant

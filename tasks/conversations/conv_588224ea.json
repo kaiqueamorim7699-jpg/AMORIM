@@ -1,0 +1,18 @@
+{
+  "id": "conv_588224ea",
+  "title": "oi",
+  "created_at": "2026-11-05T18:01:02.619059",
+  "updated_at": "2026-11-05T18:01:07.755806",
+  "messages": [
+    {
+      "role": "user",
+      "content": "oi",
+      "timestamp": "2026-11-05T18:01:02.621438"
+    },
+    {
+      "role": "assistant",
+      "content": "Oi! Eu sou a **AMORIM A.I**, sua assistente virtual especializada em **psicologia** e **negócios**. 🌱  \n\nComo posso apoiar você hoje?\n\n- **Psicoeducação** – explicações claras de conceitos psicológicos  \n- **Apoio à prática clínica** – estrutura de sessões, roteiros de anamnese, materiais para pacientes  \n- **Gestão de consultório** – planilhas financeiras, precificação, marketing ético  \n- **Negócios** – relatórios, apresentações, planilhas Excel  \n\nFique à vontade para me contar o que precisa!",
+      "timestamp": "2026-11-05T18:01:07.755781"
+    }
+  ]
+}
